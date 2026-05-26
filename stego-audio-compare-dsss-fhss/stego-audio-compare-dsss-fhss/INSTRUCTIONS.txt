@@ -1,0 +1,77 @@
+================================================================================
+          LAB: SO SÁNH HAI KỸ THUẬT GIẤU TIN ÂM THANH DSSS VÀ FHSS
+================================================================================
+
+Chào mừng các bạn sinh viên đến với bài thực hành so sánh 2 công nghệ trải phổ:
+1. DSSS (Direct Sequence Spread Spectrum): Trải phổ chuỗi trực tiếp.
+2. FHSS (Frequency Hopping Spread Spectrum): Trải phổ nhảy tần.
+
+Trong bài lab này, các bạn KHÔNG cần viết mã nguồn Python, chỉ cần chạy các dòng lệnh
+bash dưới đây để nhúng, giải mã thông điệp và so sánh khả năng kháng nhiễu đơn tần.
+
+--------------------------------------------------------------------------------
+HƯỚNG DẪN THỰC HÀNH TỪNG BƯỚC:
+
+BƯỚC 1: NHÚNG THÔNG ĐIỆP BÍ MẬT VÀ TÍNH SNR
+Nhúng thông điệp bí mật "STGO" vào file âm thanh gốc "cover.wav" bằng cả hai phương 
+pháp DSSS và FHSS, sau đó đo chất lượng tín hiệu (SNR) của từng phương pháp.
+
+- Lệnh nhúng DSSS (khóa seed = 1234, hệ số alpha = 0.02):
+  $ ./stego_tool.py embed-dsss --cover cover.wav --message "STGO" --seed 1234 --alpha 0.02 --out stego_dsss.wav
+
+- Lệnh nhúng FHSS (khóa seed = 1234, hệ số alpha = 0.04):
+  $ ./stego_tool.py embed-fhss --cover cover.wav --message "STGO" --seed 1234 --alpha 0.04 --out stego_fhss.wav
+
+- Tính toán và lưu chỉ số SNR của cả hai phương pháp để so sánh:
+  $ ./stego_tool.py snr --cover cover.wav --stego stego_dsss.wav --out snr_dsss.txt
+  $ ./stego_tool.py snr --cover cover.wav --stego stego_fhss.wav --out snr_fhss.txt
+
+>> Xem kết quả SNR thu được:
+  $ cat snr_dsss.txt
+  $ cat snr_fhss.txt
+
+---
+
+BƯỚC 2: GIẢI MÃ THÔNG ĐIỆP TRÊN KÊNH TRUYỀN SẠCH
+Giải mã thông điệp để kiểm tra xem hệ thống stego có khôi phục chính xác 100% khi
+kênh truyền không có nhiễu hay không.
+
+- Giải mã DSSS:
+  $ ./stego_tool.py extract-dsss --stego stego_dsss.wav --bits 32 --seed 1234 --out recovered_dsss.txt
+
+- Giải mã FHSS:
+  $ ./stego_tool.py extract-fhss --stego stego_fhss.wav --bits 32 --seed 1234 --out recovered_fhss.txt
+
+>> Xem thông điệp giải mã được (cả hai đều phải ra "STGO"):
+  $ cat recovered_dsss.txt
+  $ cat recovered_fhss.txt
+
+---
+
+BƯỚC 3: SO SÁNH KHI BỊ NHIỄU ĐƠN TẦN CƯỠNG ÉP (Narrowband Jamming)
+Mô phỏng một nguồn nhiễu cố định có công suất lớn (một sóng sine liên tục biên độ lớn 
+bằng 1.0 tại tần số sóng mang 2000Hz) tác động trực tiếp vào cả hai tín hiệu stego.
+
+- Tạo tín hiệu bị nhiễu:
+  $ ./stego_tool.py add-jam --stego stego_dsss.wav --frequency 2000 --amplitude 1.0 --out stego_dsss_jam.wav
+  $ ./stego_tool.py add-jam --stego stego_fhss.wav --frequency 2000 --amplitude 1.0 --out stego_fhss_jam.wav
+
+- Tiến hành trích xuất thông điệp:
+  $ ./stego_tool.py extract-dsss --stego stego_dsss_jam.wav --bits 32 --seed 1234 --out recovered_dsss_jam.txt
+  $ ./stego_tool.py extract-fhss --stego stego_fhss_jam.wav --bits 32 --seed 1234 --out recovered_fhss_jam.txt
+
+>> Xem kết quả giải mã sau khi bị nhiễu:
+  $ cat recovered_dsss_jam.txt
+  $ cat recovered_fhss_jam.txt
+
+>> NHẬN XÉT:
+- DSSS bị lỗi ký tự (kết quả ra 'sDGO' hoặc lỗi chữ) do nhiễu cố định phá vỡ tương quan rộng.
+- FHSS vẫn khôi phục chính xác 'STGO' nhờ cơ chế nhảy tần tránh kênh nhiễu cố định 2000Hz.
+
+---
+
+BƯỚC 4: HOÀN THÀNH BÀI LAB
+Sau khi thực hiện xong các bước trên, hãy quay lại terminal máy host và gõ lệnh sau 
+để nộp bài lab và chấm điểm tự động:
+  $ stoplab stego-audio-compare-dsss-fhss
+================================================================================
