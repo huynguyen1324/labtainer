@@ -1,5 +1,5 @@
-# Dockerfile: Standardized DHCP Server image
-# Logic Name: labtainer-dhcp-server:1.0
+# Dockerfile: Standardized DHCP Server image with auto-startup
+# Logic Name: dhcp-lab.dhcpserver:latest
 # Base: labtainers/labtainer.network.ssh2 (Ubuntu 20.04 Focal)
 FROM labtainers/labtainer.network.ssh2:latest
 ENV DEBIAN_FRONTEND=noninteractive
@@ -30,6 +30,10 @@ RUN id -u ubuntu >/dev/null 2>&1 || useradd -m -s /bin/bash -u 1000 ubuntu && \
 
 # Copy DHCP base configuration
 COPY dhcpd.conf /etc/dhcp/dhcpd.conf
+
+# Setup systemd service to auto-configure route and start DHCP server on boot
+RUN printf '[Unit]\nDescription=DHCP Server Auto-Configuration and Startup\nAfter=network.target\n\n[Service]\nType=oneshot\nExecStart=/bin/bash -c "ip route add 10.10.0.0/24 via 192.168.0.1 dev eth0 2>/dev/null || true; touch /var/lib/dhcp/dhcpd.leases; chown dhcpd:dhcpd /var/lib/dhcp/dhcpd.leases 2>/dev/null || true; /usr/sbin/dhcpd -4 -cf /etc/dhcp/dhcpd.conf -pf /var/run/dhcpd.pid eth0 2>/dev/null || true"\nRemainAfterExit=yes\n\n[Install]\nWantedBy=multi-user.target\n' > /etc/systemd/system/dhcp-server-init.service && \
+    systemctl enable dhcp-server-init.service
 
 # Container init uses root for systemd
 USER root
