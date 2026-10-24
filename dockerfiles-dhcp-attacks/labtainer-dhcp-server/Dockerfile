@@ -2,6 +2,8 @@
 # Logic Name: dhcp-lab.dhcpserver:latest
 # Base: labtainers/labtainer.network.ssh2 (Ubuntu 20.04 Focal)
 FROM labtainers/labtainer.network.ssh2:latest
+LABEL version=3
+LABEL base=labtainers/labtainer.network.ssh2.5a46b1ccd9e9
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install ISC DHCP Server, dnsmasq, and diagnostic tools

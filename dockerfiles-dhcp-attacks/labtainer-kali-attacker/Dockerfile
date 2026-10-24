@@ -2,6 +2,8 @@
 # Logic Name: labtainer-kali-attacker:1.0
 # Base: labtainers/labtainer.network.ssh2 (Ubuntu 20.04 Focal)
 FROM labtainers/labtainer.network.ssh2:latest
+LABEL version=3
+LABEL base=labtainers/labtainer.network.ssh2.5a46b1ccd9e9
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install Yersinia, Scapy, Network diagnostic and attack tools
